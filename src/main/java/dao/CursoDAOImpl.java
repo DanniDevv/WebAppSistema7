@@ -66,7 +66,7 @@ public class CursoDAOImpl implements ICursosDAO {
                 Cursos curso = new Cursos();
                 curso.setCodigo(rs.getInt(1));
                 curso.setNombre(rs.getString(2));
-                curso.setCosto(rs.getBigDecimal(3));
+                curso.setCosto(rs.getDouble(3));
                 curso.setFec_ini(rs.getDate(4));
                 curso.setFec_fin(rs.getDate(5));
                 curso.setDuracion(rs.getInt(6));
@@ -158,7 +158,7 @@ public class CursoDAOImpl implements ICursosDAO {
             while (rs.next()){
                 curso.setCodigo(rs.getInt(1));
                 curso.setNombre(rs.getString(2));
-                curso.setCosto(rs.getBigDecimal(3));
+                curso.setCosto(rs.getDouble(3));
                 curso.setFec_ini(rs.getDate(4));
                 curso.setFec_fin(rs.getDate(5));
                 curso.setDuracion(rs.getInt(6));

@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import modelos.Alumnos;
+import modelos.Conexion;
 import modelos.Cursos;
 
 //import modelos.Cursos;
@@ -177,7 +178,87 @@ public class controladorPrincipal extends HttpServlet {
                 request.setAttribute("titulo", "Modificar Alumno");
                 request.getRequestDispatcher("/mantenimientos/editarAlumnos.jsp").forward(
                         request, response);
+            } else if (accion.compareTo("matriculaMostrarAlumnos") == 0) {
+                if (request.getParameter("modo").compareTo("Lista") == 0) {
+                    List<Alumnos> arrAlumnos = new ArrayList<Alumnos>();
+                    Alumnos alumno = new Alumnos();
+                    alumno.setNombre(" ");
+                    IMatriculaDAO dao = new MatriculaDAOImpl();
+                    arrAlumnos = dao.buscarAlumnos(alumno);
+                    request.setAttribute("arrAlumnos", arrAlumnos);
+                    request.getRequestDispatcher("/operaciones/matriculaMostrarAlumnos.jsp").forward(
+                            request, response);
+                } else if (request.getParameter("boton").compareTo("Buscar") == 0) {
+                    List<Alumnos> arrAlumnos = new ArrayList<Alumnos>();
+                    Alumnos alumno = new Alumnos();
+                    alumno.setNombre(request.getParameter("xalu"));
+                    IMatriculaDAO dao = new MatriculaDAOImpl();
+                    arrAlumnos = dao.buscarAlumnos(alumno);
+                    request.setAttribute("arrAlumnos", arrAlumnos);
+                    request.setAttribute("nombre", alumno.getNombre());
+                    request.getRequestDispatcher("/operaciones/matriculaMostrarAlumnos.jsp").forward(
+                            request, response);
+                } else {
+                    int xcodAlumno = Integer.parseInt(request.getParameter("xcodAlumno"));
+                    Alumnos alumno = new Alumnos();
+                    IAlumnosDAO dao = new AlumnoDAOImpl();
+                    alumno = dao.buscar(xcodAlumno);
 
+                    List<Cursos> arrCursos = new ArrayList<Cursos>();
+                    IMatriculaDAO daoMatri = new MatriculaDAOImpl();
+                    arrCursos = daoMatri.buscarCursos();
+
+                    request.setAttribute("arrCursos", arrCursos);
+                    request.setAttribute("alumno", alumno);
+                    request.getRequestDispatcher("/operaciones/matriculaMostrarCursos.jsp").forward(
+                            request, response);
+                }
+
+//                CURSOS
+            } else if (accion.compareTo("matriculaMostrarSubtotal") == 0) {
+                String xcodCursos[] = request.getParameterValues("xcodCurso");
+                List<Cursos> arrCursos = new ArrayList<Cursos>();
+                ICursosDAO dao = new CursoDAOImpl();
+                double total = 0;
+                for (int xc = 0; xc < xcodCursos.length; xc++) {
+                    Cursos curso = new Cursos();
+                    curso = dao.buscar(Integer.parseInt(xcodCursos[xc]));
+                    double costo = curso.getCosto();
+                    total = total + costo;
+                    arrCursos.add(curso);
+                }
+                int xcodAlumno = Integer.parseInt(request.getParameter("xcodAlumno"));
+                Alumnos alumno = new Alumnos();
+                IAlumnosDAO dao2 = new AlumnoDAOImpl();
+                alumno = dao2.buscar(xcodAlumno);
+                Conexion co = new Conexion();
+                String xcodMatricula = "MAT" + co.generarCodigo("matriculas", "codigo");
+                request.setAttribute("arrCursos", arrCursos);
+                request.setAttribute("alumno", alumno);
+                request.setAttribute("total", total);
+                request.setAttribute("xmatri", xcodMatricula);
+                request.getRequestDispatcher("/operaciones/matriculaMostrarSubtotal.jsp").forward(
+                        request, response);
+
+            } else if (accion.compareTo("matriculaGrabar") == 0) {
+                if (request.getParameter("boton").compareTo("GRABAR") == 0) {
+                    String xcodAlumno = request.getParameter("xcodAlumno");
+                    String xcodCursos[] = request.getParameterValues("xcodCurso");
+                    String xmontos[] = request.getParameterValues("xmonto");
+
+                    String[] datosMatricula = new String[3];
+                    datosMatricula[0] = request.getParameter("xndoc");
+                    datosMatricula[1] = xcodAlumno;
+                    datosMatricula[2] = request.getParameter("xtotal");
+
+                    IMatriculaDAO dao = new MatriculaDAOImpl();
+                    boolean rpta = dao.grabarMatricula(datosMatricula, xcodCursos, xmontos);
+                    if (rpta){
+                        out.println("<br><h2>Registro grabado correctamente!</h2>");
+                    }else{
+                        out.println("<br><h2>Error al grabar Matricula</h2>");
+                    }
+                }
             } else if (accion.equals("listadoCursos")) {
                 List<Cursos> arrCursos = new ArrayList<Cursos>();
                 ICursosDAO dao = new CursoDAOImpl();
@@ -200,12 +281,13 @@ public class controladorPrincipal extends HttpServlet {
                     boolean eliminado = cursoDao.eliminar(codigos);
                     if (eliminado) {
                         request.setAttribute("mensaje", "Curso(s) eliminado(s) correctamente.");
-                    }else{
+                    } else {
                         request.setAttribute("mensaje", "No se pudo eliminar el curso.");
                     }
                     request.getRequestDispatcher("/controladorPrincipal?accion=listadoCursos").forward(
                             request, response);
                 }
+
             } else if (accion.compareTo("GRABAR_CURSO") == 0) {
                 if (request.getParameter("boton").compareTo("GRABAR") == 0) {
                     String operacion = request.getParameter("operacion");
@@ -214,7 +296,7 @@ public class controladorPrincipal extends HttpServlet {
                     Cursos curso = new Cursos();
                     curso.setCodigo(Integer.parseInt(request.getParameter("xcod")));
                     curso.setNombre(request.getParameter("xnom"));
-                    curso.setCosto(new BigDecimal(request.getParameter("xcos")));
+                    curso.setCosto(Double.parseDouble(request.getParameter("xcos")));
                     curso.setFec_ini(xfec);
                     curso.setFec_fin(xfec);
                     curso.setDuracion(Integer.parseInt(request.getParameter("xdur")));
@@ -232,8 +314,8 @@ public class controladorPrincipal extends HttpServlet {
                 }
                 request.getRequestDispatcher("/controladorPrincipal?accion=listadoCursos").forward(
                         request, response);
-                
-            }else if(accion.compareTo("modificarCurso") == 0){
+
+            } else if (accion.compareTo("modificarCurso") == 0) {
                 String xcod = request.getParameter("xcod").trim();
                 ICursosDAO dao = new CursoDAOImpl();
                 Cursos curso = dao.buscar(Integer.parseInt(xcod));
@@ -242,8 +324,8 @@ public class controladorPrincipal extends HttpServlet {
                 request.setAttribute("titulo", "Modificar Curso");
                 request.getRequestDispatcher("/mantenimientos/editarCursos.jsp").forward(
                         request, response);
-                
-            }else {
+
+            } else {
                 out.println("Accion: (" + accion + ") no reconocida...");
             }
         } catch (Exception ex) {

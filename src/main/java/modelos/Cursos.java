@@ -4,7 +4,6 @@
  */
 package modelos;
 
-import java.math.BigDecimal;
 import java.sql.Date;
 
 /**
@@ -14,7 +13,7 @@ import java.sql.Date;
 public class Cursos {
     int codigo;
     String nombre;
-    BigDecimal costo;
+    double costo;
     Date fec_ini;
     Date fec_fin;
     int duracion;
@@ -27,7 +26,7 @@ public class Cursos {
         
     }
     
-    public Cursos(int codigo, String nombre, BigDecimal costo, Date fec_ini, Date fec_fin, int duracion, int sesiones, int capacidad, int inscritos, String estado) {
+    public Cursos(int codigo, String nombre, double costo, Date fec_ini, Date fec_fin, int duracion, int sesiones, int capacidad, int inscritos, String estado) {
         this.codigo = codigo;
         this.nombre = nombre;
         this.costo = costo;
@@ -56,11 +55,11 @@ public class Cursos {
         this.nombre = nombre;
     }
 
-    public BigDecimal getCosto() {
+    public double getCosto() {
         return costo;
     }
 
-    public void setCosto(BigDecimal costo) {
+    public void setCosto(double costo) {
         this.costo = costo;
     }
 
